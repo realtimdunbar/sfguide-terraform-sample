@@ -9,6 +9,7 @@ terraform {
 
 provider "snowflake" {
   role     = "SYSADMIN"
+  region   = "us-east-1"
 }
 
 resource "snowflake_database" "db" {
