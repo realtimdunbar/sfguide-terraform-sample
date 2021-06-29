@@ -72,3 +72,17 @@ resource "snowflake_role_grants" "grants" {
    role_name = snowflake_role.role.name
    users     = [snowflake_user.user.name]
 }
+resource "snowflake_task" "task" {
+  comment = "employees_task"
+
+  database  = "demo_db"
+  schema    = "public"
+  warehouse = "compute_wh"
+
+  name          = "employee_task"
+  schedule      = "1"
+  sql_statement = "INSERT INTO EMPLOYEES_COPY(EMPLOYEE_ID, EMPLOYEE_NAME, LOAD_TIME) SELECT * FROM EMPLOYEES;"
+
+  user_task_timeout_ms = 10000
+  enabled              = true
+}
