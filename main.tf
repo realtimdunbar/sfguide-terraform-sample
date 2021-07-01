@@ -72,3 +72,18 @@ resource "snowflake_role_grants" "grants" {
    role_name = snowflake_role.role.name
    users     = [snowflake_user.user.name]
 }
+
+resource "snowflake_task" "task" {
+  comment = "employees_task"
+
+  database  = snowflake_database.db.name
+  schema    = snowflake_schema.schema.name
+  warehouse = snowflake_warehouse.warehouse.name
+
+  name          = "employees_task"
+  schedule      = "1 MINUTE"
+  sql_statement = "INSERT INTO EMPLOYEES(LOAD_TIME) VALUES(CURRENT_TIMESTAMP);"
+
+  user_task_timeout_ms = 10000
+  enabled              = false
+}
