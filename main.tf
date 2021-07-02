@@ -87,3 +87,96 @@ resource "snowflake_task" "task" {
   user_task_timeout_ms = 10000
   enabled              = false
 }
+
+resource "snowflake_task" "task1" {
+  comment = "employee_task"
+
+  database  = snowflake_database.db.name
+  schema    = snowflake_schema.schema.name
+  warehouse = snowflake_warehouse.warehouse.name
+
+  name          = "employee_task"
+  schedule      = "1 MINUTE"
+  sql_statement = "INSERT INTO EMPLOYEES(LOAD_TIME) VALUES(CURRENT_TIMESTAMP);"
+
+  user_task_timeout_ms = 10000
+  enabled              = false
+}
+
+resource "snowflake_table" "tree_task_table_1" {
+  database  = snowflake_database.db.name
+  schema    = snowflake_schema.schema.name
+  name       = "EMPLOYEES"
+  comment    = "A table for testing tree of tasks with terraform"
+
+#   owner      = "TF_DEMO_SVC_ROLE"
+
+  column {
+    name = "id"
+    type = "int"
+  }
+
+  column {
+    name = "data"
+    type = "text"
+  }
+
+  column {
+    name = "DATE"
+    type = "TIMESTAMP_NTZ(9)"
+  }
+}
+
+resource "snowflake_table" "tree_task_table_2" {
+  database  = snowflake_database.db.name
+  schema    = snowflake_schema.schema.name
+  name       = "EMPLOYEES_COPY"
+  comment    = "A table for testing tree of tasks with terraform"
+
+#   owner      = "TF_DEMO_SVC_ROLE"
+
+  column {
+    name = "id"
+    type = "int"
+  }
+
+  column {
+    name = "data"
+    type = "text"
+  }
+
+  column {
+    name = "DATE"
+    type = "TIMESTAMP_NTZ(9)"
+  }
+}
+
+resource "snowflake_task" "parent_task" {
+  comment = "testing tree of tasks with terraform, parent"
+
+  database  = snowflake_database.db.name
+  schema    = snowflake_schema.schema.name
+  warehouse = snowflake_warehouse.warehouse.name
+
+  name          = "parent_task"
+  schedule      = "1 MINUTE"
+  sql_statement = "INSERT INTO EMPLOYEES VALUES(1, 'test', current_date());"
+
+  user_task_timeout_ms = 10000
+  enabled              = true
+}
+
+resource "snowflake_task" "child_task" {
+  comment = "testing tree of tasks with terraform, child"
+
+  database  = snowflake_database.db.name
+  schema    = snowflake_schema.schema.name
+  warehouse = snowflake_warehouse.warehouse.name
+
+  name          = "child_task"
+  sql_statement = "INSERT INTO EMPLOYEES_COPY SELECT * FROM EMPLOYEES;"
+
+  user_task_timeout_ms = 10000
+  after                = "parent_task"
+  enabled              = true
+}
